@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive Q&A</title>
+  <style>
+    /* Body and fonts */
+    body {
+      font-family: 'Georgia', serif;
+      background-color: #f4e1c1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      color: #3b2f2f;
+      text-align: center;
+    }
+
+    /* Question Section */
+    #question {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 8px 12px;
+      font-size: 1em;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    /* Envelope Section */
+    #envelopeContainer {
+      margin-top: 20px;
+      position: relative;
+      width: 120px;
+      height: 80px;
+    }
+
+    #envelope {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      cursor: pointer;
+      perspective: 500px;
+    }
+
+    /* Envelope body */
+    #body {
+      width: 100%;
+      height: 100%;
+      background: #e0c39f;
+      border: 2px solid #3b2f2f;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 1;
+    }
+
+    /* Envelope flap */
+    #flap {
+      width: 0;
+      height: 0;
+      border-left: 60px solid transparent;
+      border-right: 60px solid transparent;
+      border-bottom: 40px solid #d4a373;
+      position: absolute;
+      top: -40px;
+      left: 0;
+      z-index: 2;
+      transform-origin: top center;
+      transition: transform 0.8s ease-in-out;
+    }
+
+    /* Flap open animation */
+    #envelope.open #flap {
+      transform: rotateX(-180deg);
+    }
+
+    /* Letter Section */
+    #letterContainer {
+      margin-top: 20px;
+      max-width: 400px;
+    }
+
+    #letterContent {
+      padding: 15px;
+      border: 2px solid #3b2f2f;
+      background-color: #fff8dc;
+      text-align: left;
+      min-height: 200px;
+      animation: popLetter 0.5s forwards;
+    }
+
+    /* Letter pop animation */
+    @keyframes popLetter {
+      from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.8);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Question Section -->
+  <div id="questionContainer"></div>
+
+  <!-- Envelope Section -->
+  <div id="envelopeContainer" style="display:none;">
+    <div id="envelope" onclick="openEnvelope()">
+      <div id="flap"></div>
+      <div id="body"></div>
+    </div>
+  </div>
+
+  <!-- Letter Section -->
+  <div id="letterContainer" style="display:none;">
+    <div id="letterContent"></div>
+    <button id="nextPageBtn" onclick="nextPage()">Next</button>
+  </div>
+
+  <script>
+    // Questions
+    const questions = [
+      { q: "Which do you prefer Jollibee or Mcdo", a: "Jollibee" },
+      { q: "Do you like Motorcycle or Car more?", a: "Car" },
+      { 
+        q: "What does Jasmine prefer doing when on a vacation or goes to a pool with fam?", 
+        a: "A", 
+        note: "D should've been the right answer 😉",
+        options: {
+          A: "Sits quietly and reads her book peacefully",
+          B: "Dips herself in the pool",
+          C: "Watch horror videos",
+          D: "Call Neal because she misses her"
+        }
+      },
+      { q: "Diana or Nicole", a: "Diana" },
+      { q: "Do you get irritated by Neal sometimes?", a: "No" }
+    ];
+
+    let currentQuestion = 0;
+
+    // Display first question
+    displayQuestion();
+
+    function displayQuestion() {
+      const qObj = questions[currentQuestion];
+      const container = document.getElementById('questionContainer');
+      container.innerHTML = "";
+
+      const questionDiv = document.createElement('div');
+      questionDiv.id = "question";
+      questionDiv.textContent = qObj.q;
+      container.appendChild(questionDiv);
+
+      if (qObj.options) {
+        for (let key in qObj.options) {
+          const btn = document.createElement('button');
+          btn.textContent = `${key}. ${qObj.options[key]}`;
+          btn.onclick = () => handleAnswer(key);
+          container.appendChild(btn);
+        }
+      } else {
+        const input = document.createElement('input');
+        input.type = "text";
+        input.id = "answer";
+        input.placeholder = "Type your answer";
+        container.appendChild(input);
+
+        const submitBtn = document.createElement('button');
+        submitBtn.textContent = "Submit";
+        submitBtn.onclick = () => handleAnswer(document.getElementById('answer').value.trim());
+        container.appendChild(submitBtn);
+      }
+    }
+
+    function handleAnswer(answer) {
+      const qObj = questions[currentQuestion];
+
+      if (answer.toLowerCase() === qObj.a.toLowerCase()) {
+        if (qObj.note && answer.toUpperCase() === "A") {
+          alert(qObj.note);
+        }
+
+        currentQuestion++;
+
+        if (currentQuestion < questions.length) {
+          displayQuestion();
+        } else {
+          document.getElementById('questionContainer').style.display = "none";
+          document.getElementById('envelopeContainer').style.display = "block";
+        }
+      } else {
+        alert("Oops! You owe me a selfie. Try again.");
+      }
+    }
+
+    // Letter pages
+    const letterPages = [
+      `To: Jasmine, My love.<br><br>
+      If I were sleepy or bag-ko ko nimata ron I'd spam this letter with I miss you and I love you bitaw...`,
+
+      `...But I do, there are a lot of things gyud and I tell it to you now this program would explode cause it wouldnt also comprehend the you are and the way I see you, my love...`,
+
+      `...I love you, lang. I don't think jud gani nga if ever maabot sa time nga in ana musugot jud dayun ko without having to fight for you...`,
+
+      `...I love you, Jasmine. I'd still love u even if youre a fork right now, or even a show, a spoon, a door. I'd love every version of you.<br><br>
+      Through Him, with love,<br>
+      Tods.`
+    ];
+
+    let currentPage = 0;
+
+    function openEnvelope() {
+      const envelope = document.getElementById('envelope');
+      envelope.classList.add('open');
+
+      setTimeout(() => {
+        document.getElementById('envelopeContainer').style.display = "none";
+        document.getElementById('letterContainer').style.display = "block";
+        currentPage = 0;
+        showPage();
+      }, 800);
+    }
+
+    function showPage() {
+      document.getElementById('letterContent').innerHTML = letterPages[currentPage];
+      
+      document.getElementById('nextPageBtn').style.display = currentPage === letterPages.length - 1 ? "none" : "inline-block";
+
+      if (!document.getElementById('prevPageBtn')) {
+        const prevBtn = document.createElement('button');
+        prevBtn.id = "prevPageBtn";
+        prevBtn.textContent = "Previous";
+        prevBtn.onclick = prevPage;
+        document.getElementById('letterContainer').insertBefore(prevBtn, document.getElementById('nextPageBtn'));
+      }
+
+      document.getElementById('prevPageBtn').style.display = currentPage === 0 ? "none" : "inline-block";
+    }
+
+    function nextPage() {
+      if (currentPage < letterPages.length - 1) {
+        currentPage++;
+        showPage();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 0) {
+        currentPage--;
+        showPage();
+      }
+    }
+  </script>
+</body>
+</html>
+
